@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "942359286448",
+    "project_id": "incident-reporting-syste-19760",
+    "storage_bucket": "incident-reporting-syste-19760.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:942359286448:android:a26909976a1b67c0d2a175",
+        "android_client_info": {
+          "package_name": "com.lunatialiens.incidentreportingsystem"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "942359286448-j0vb1ad98sfr4t8jilpm4mmhc08lih5u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQW4f0jgQkFwmHh_e3Jj7d64Mj_lkcVmI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "942359286448-j0vb1ad98sfr4t8jilpm4mmhc08lih5u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
