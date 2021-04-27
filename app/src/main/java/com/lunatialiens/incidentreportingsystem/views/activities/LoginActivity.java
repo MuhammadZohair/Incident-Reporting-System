@@ -28,9 +28,15 @@ import com.lunatialiens.incidentreportingsystem.utils.Constants;
 import java.util.Objects;
 
 
+/**
+ * The type Login activity.
+ */
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "LoginActivity";
+    /**
+     * The Double back to exit pressed once.
+     */
     boolean doubleBackToExitPressedOnce = false;
     private EditText emailEditText;
     private EditText passwordEditText;
@@ -157,7 +163,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         LayoutInflater inflater = (LayoutInflater) LoginActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         assert inflater != null;
-        @SuppressLint("InflateParams") View alertDialogView = inflater.inflate(R.layout.input_code, null);
+        @SuppressLint("InflateParams") View alertDialogView = inflater.inflate(R.layout.input_desc, null);
         builder.setView(alertDialogView);
         builder.setIcon(R.mipmap.ic_launcher);
         builder.setCancelable(false);

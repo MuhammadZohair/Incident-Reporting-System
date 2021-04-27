@@ -19,6 +19,9 @@ import com.lunatialiens.incidentreportingsystem.utils.AppUtils;
 import com.lunatialiens.incidentreportingsystem.utils.Constants;
 
 
+/**
+ * The type Settings fragment.
+ */
 public class SettingsFragment extends Fragment implements View.OnClickListener {
 
     private EditText passwordEditText;

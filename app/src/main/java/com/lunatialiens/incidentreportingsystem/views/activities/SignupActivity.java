@@ -19,6 +19,9 @@ import com.lunatialiens.incidentreportingsystem.repository.FirebaseDatabaseHelpe
 
 import es.dmoral.toasty.Toasty;
 
+/**
+ * The type Signup activity.
+ */
 public class SignupActivity extends AppCompatActivity implements View.OnClickListener {
 
     private EditText emailEditText;

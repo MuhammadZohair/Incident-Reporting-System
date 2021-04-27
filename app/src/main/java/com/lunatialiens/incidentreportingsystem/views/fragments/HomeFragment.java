@@ -8,14 +8,21 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lunatialiens.incidentreportingsystem.R;
+import com.lunatialiens.incidentreportingsystem.controller.IncidentAdapter;
 import com.lunatialiens.incidentreportingsystem.repository.CurrentDatabase;
+import com.lunatialiens.incidentreportingsystem.repository.FirebaseDatabaseHelper;
 
-public class HomeFragment extends Fragment implements View.OnClickListener {
+/**
+ * The type Home fragment.
+ */
+public class HomeFragment extends Fragment {
 
-    private FloatingActionButton addFloatingActionButton;
+    private RecyclerView recyclerView;
+    private IncidentAdapter incidentAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -28,8 +35,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
             nameTextView.setText(CurrentDatabase.getCurrentPublicUser().getName());
         }
 
-        addFloatingActionButton = v.findViewById(R.id.fab_add);
-        addFloatingActionButton.setOnClickListener(this);
+        recyclerView = v.findViewById(R.id.rv_incidents);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        incidentAdapter = new IncidentAdapter(getContext(), FirebaseDatabaseHelper.getIncidentArrayList());
+        recyclerView.setAdapter(incidentAdapter);
 
         return v;
     }
@@ -38,11 +47,5 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     public void onResume() {
         super.onResume();
 
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v == addFloatingActionButton) {
-        }
     }
 }

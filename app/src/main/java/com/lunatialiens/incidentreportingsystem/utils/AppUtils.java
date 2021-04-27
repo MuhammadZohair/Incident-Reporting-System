@@ -1,5 +1,6 @@
 package com.lunatialiens.incidentreportingsystem.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -10,11 +11,15 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.text.format.DateFormat;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.annotation.DrawableRes;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -22,6 +27,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.lunatialiens.incidentreportingsystem.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -36,8 +42,14 @@ import java.util.regex.Pattern;
 
 import es.dmoral.toasty.Toasty;
 
+/**
+ * The type App utils.
+ */
 public class AppUtils {
 
+    /**
+     * The constant PUBLIC_USER_TYPE.
+     */
     public static final String PUBLIC_USER_TYPE = "PUBLIC_USER";
 
 
@@ -46,21 +58,45 @@ public class AppUtils {
     private static final Pattern VALID_PASSWORD_REGEX =
             Pattern.compile("^(?=.*[0-9])(?=.*[a-z]).{6,}$", Pattern.CASE_INSENSITIVE);
 
+    /**
+     * Validate email boolean.
+     *
+     * @param emailStr the email str
+     * @return the boolean
+     */
     public static boolean validateEmail(CharSequence emailStr) {
         Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
         return matcher.find();
     }
 
+    /**
+     * Validate password boolean.
+     *
+     * @param passwordStr the password str
+     * @return the boolean
+     */
     public static boolean validatePassword(CharSequence passwordStr) {
         Matcher matcher = VALID_PASSWORD_REGEX.matcher(passwordStr);
         return matcher.find();
     }
 
+    /**
+     * Generate uuid string.
+     *
+     * @return the string
+     */
     public static String generateUUID() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }
 
+    /**
+     * Load image.
+     *
+     * @param context   the context
+     * @param userId    the user id
+     * @param imageView the image view
+     */
     public static void loadImage(Context context, String userId, ImageView imageView) {
         final StorageReference mStorageRef = FirebaseStorage.getInstance().getReference()
                 .child("user_profile_pictures/" + userId + ".png");
@@ -72,6 +108,12 @@ public class AppUtils {
         });
     }
 
+    /**
+     * Upload image.
+     *
+     * @param id       the id
+     * @param imageUri the image uri
+     */
     public static void uploadImage(String id, Uri imageUri) {
         final StorageReference mStorageRef = FirebaseStorage.getInstance().getReference()
                 .child("user_profile_pictures/" + id + ".png");
@@ -79,6 +121,12 @@ public class AppUtils {
         mStorageRef.putFile(imageUri);
     }
 
+    /**
+     * Gets date.
+     *
+     * @param context  the context
+     * @param editText the edit text
+     */
     public static void getDate(Activity context, EditText editText) {
         Calendar myCalendar = Calendar.getInstance();
 
@@ -99,6 +147,12 @@ public class AppUtils {
                 myCalendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
+    /**
+     * Gets time.
+     *
+     * @param context  the context
+     * @param editText the edit text
+     */
     public static void getTime(Context context, EditText editText) {
         Calendar mCurrentTime = Calendar.getInstance();
         int hour = mCurrentTime.get(Calendar.HOUR_OF_DAY);
@@ -114,6 +168,12 @@ public class AppUtils {
         mTimePicker.show();
     }
 
+    /**
+     * Formulate date string.
+     *
+     * @param date the date
+     * @return the string
+     */
     public static String formulateDate(String date) {
         StringBuilder dateBuilder = new StringBuilder();
 
@@ -194,47 +254,109 @@ public class AppUtils {
         return dateBuilder.toString();
     }
 
+    /**
+     * Success.
+     *
+     * @param context the context
+     * @param message the message
+     */
     public static void success(Context context, String message) {
         Toasty.success(context, message, Toasty.LENGTH_SHORT, true).show();
     }
 
+    /**
+     * Error.
+     *
+     * @param context the context
+     * @param message the message
+     */
     public static void error(Context context, String message) {
         Toasty.error(context, message, Toasty.LENGTH_SHORT, true).show();
     }
 
+    /**
+     * Info.
+     *
+     * @param context the context
+     * @param message the message
+     */
     public static void info(Context context, String message) {
         Toasty.info(context, message, Toasty.LENGTH_SHORT, true).show();
     }
 
+    /**
+     * Warning.
+     *
+     * @param context the context
+     * @param message the message
+     */
     public static void warning(Context context, String message) {
         Toasty.warning(context, message, Toasty.LENGTH_SHORT, true).show();
     }
 
+    /**
+     * Save data in shared prefs.
+     *
+     * @param context the context
+     * @param key     the key
+     * @param value   the value
+     */
     public static void saveDataInSharedPrefs(Context context, String key, String value) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString(key, value).apply();
     }
 
+    /**
+     * Gets data from shared prefs.
+     *
+     * @param context the context
+     * @param key     the key
+     * @return the data from shared prefs
+     */
     public static String getDataFromSharedPrefs(Context context, String key) {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(key, "");
     }
 
+    /**
+     * Clear shared prefs.
+     *
+     * @param context the context
+     */
     public static void clearSharedPrefs(Context context) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString("email", "").apply();
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString("password", "").apply();
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString("type", "").apply();
     }
 
+    /**
+     * Gets todays total cals.
+     *
+     * @param context the context
+     * @return the todays total cals
+     */
     public static float getTodaysTotalCals(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getFloat("CALS", 0);
     }
 
 
+    /**
+     * Save todays total cals.
+     *
+     * @param context the context
+     * @param cals    the cals
+     */
     public static void saveTodaysTotalCals(Context context, Float cals) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putFloat("CALS", (
                 PreferenceManager.getDefaultSharedPreferences(context).getFloat("CALS", 0) + cals
         )).apply();
     }
 
+    /**
+     * Round double.
+     *
+     * @param value  the value
+     * @param places the places
+     * @return the double
+     */
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 
@@ -244,14 +366,32 @@ public class AppUtils {
         return (double) tmp / factor;
     }
 
+    /**
+     * Gets simple time.
+     *
+     * @param timeStamp the time stamp
+     * @return the simple time
+     */
     public static String getSimpleTime(long timeStamp) {
         return new SimpleDateFormat("dd/MM/yyyy hh:mm aa").format(timeStamp);
     }
 
+    /**
+     * Gets simple date.
+     *
+     * @param timeStamp the time stamp
+     * @return the simple date
+     */
     public static String getSimpleDate(long timeStamp) {
         return new SimpleDateFormat("dd/MM/yyyy").format(timeStamp);
     }
 
+    /**
+     * Get date string [ ].
+     *
+     * @param time the time
+     * @return the string [ ]
+     */
     public static String[] getDate(long time) {
         String[] array = new String[3];
         Calendar cal = Calendar.getInstance(Locale.ENGLISH);
@@ -279,9 +419,50 @@ public class AppUtils {
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
+    /**
+     * Parse location lat lng.
+     *
+     * @param location the location
+     * @return the lat lng
+     */
     public static LatLng parseLocation(String location) {
         List<String> latlng = Arrays.asList(location.split(","));
         return new LatLng(Double.parseDouble(latlng.get(0)), Double.parseDouble(latlng.get(1)));
 
+    }
+
+    /**
+     * Open dialog to get details string.
+     *
+     * @param activity the activity
+     * @return the string
+     */
+    public static String openDialogToGetDetails(FragmentActivity activity) {
+        final String[] text = new String[1];
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Enter Details");
+
+        LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        assert inflater != null;
+        @SuppressLint("InflateParams") View alertDialogView = inflater.inflate(R.layout.input_desc, null);
+        builder.setView(alertDialogView);
+        builder.setIcon(R.mipmap.ic_launcher);
+        builder.setCancelable(false);
+
+        final EditText codeEditText = alertDialogView.findViewById(R.id.et_desc);
+
+        builder.setView(alertDialogView);
+
+        builder.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+            String t = codeEditText.getText().toString();
+            text[0] = t;
+        });
+        builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+            info(activity, "Please write some text");
+            dialog.cancel();
+        });
+
+        builder.show();
+        return text[0];
     }
 }

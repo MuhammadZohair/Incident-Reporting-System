@@ -17,6 +17,9 @@ import com.lunatialiens.incidentreportingsystem.views.fragments.HomeFragment;
 import com.lunatialiens.incidentreportingsystem.views.fragments.MapsFragment;
 import com.lunatialiens.incidentreportingsystem.views.fragments.SettingsFragment;
 
+/**
+ * The type Main activity.
+ */
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "DashboardActivity";

@@ -1,6 +1,8 @@
 package com.lunatialiens.incidentreportingsystem.views.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -11,6 +13,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -21,6 +26,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
@@ -31,11 +37,17 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.lunatialiens.incidentreportingsystem.R;
+import com.lunatialiens.incidentreportingsystem.models.Incident;
+import com.lunatialiens.incidentreportingsystem.repository.CurrentDatabase;
+import com.lunatialiens.incidentreportingsystem.repository.FirebaseDatabaseHelper;
 import com.lunatialiens.incidentreportingsystem.utils.AppUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -44,7 +56,7 @@ import java.util.List;
 public class MapsFragment extends Fragment implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        com.google.android.gms.location.LocationListener {
+        LocationListener, View.OnClickListener {
 
     /**
      * The constant MY_PERMISSIONS_REQUEST_LOCATION.
@@ -62,6 +74,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     private Location mLastLocation;
     private boolean triggered = true;
 
+    private LatLng pointedLocation;
+    private ProgressDialog progressDialog;
+    private TextView currentLocationTextView;
+    private ImageView goImageView;
+
     /**
      * Instantiates a new Maps fragment.
      */
@@ -75,7 +92,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
         checkLocationPermission();
         displayLocationSettingsRequest(getContext());
 
+        initializeWidgets(rootView);
+
         return rootView;
+    }
+
+    private void initializeWidgets(View view) {
+        currentLocationTextView = view.findViewById(R.id.currentLocationLayout);
+
+        goImageView = view.findViewById(R.id.goImageView);
+        goImageView.setOnClickListener(this);
     }
 
     @Override
@@ -100,15 +126,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     }
 
     private void setMarkersOnMap(GoogleMap googleMap) {
-//        ArrayList<Incidents> gyms = FirebaseDatabaseHelper.getGymsArrayList();
-//
-//        for (int i = 0; i < gyms.size(); i++) {
-//            MarkerOptions markerOptions = new MarkerOptions();
-//            markerOptions.position(AppUtils.parseLocation(gyms.get(i).getLocation()));
-//            markerOptions.icon(AppUtils.bitmapDescriptorFromVector(getContext(), R.drawable.ic_pin));
-//            markerOptions.title(gyms.get(i).getGymName());
-//            googleMap.addMarker(markerOptions);
-//        }
+        googleMap.clear();
+        ArrayList<Incident> incidentArrayList = FirebaseDatabaseHelper.getIncidentArrayList();
+
+        for (int i = 0; i < incidentArrayList.size(); i++) {
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.position(AppUtils.parseLocation(incidentArrayList.get(i).getLocation()));
+            markerOptions.icon(AppUtils.bitmapDescriptorFromVector(getContext(), R.drawable.ic_marker_pin));
+            markerOptions.title(incidentArrayList.get(i).getDesc());
+            googleMap.addMarker(markerOptions);
+        }
     }
 
     private void displayLocationSettingsRequest(Context context) {
@@ -200,13 +227,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     private void setOnCameraIdleListener() {
         onCameraIdleListener = () -> {
             LatLng latLng = mGoogleMap.getCameraPosition().target;
-            Geocoder geocoder = new Geocoder(getActivity());
+            pointedLocation = latLng;
+            Geocoder geocoder = new Geocoder(getContext());
 
             try {
                 List<Address> addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
 
                 if (addresses.size() > 0) {
                     String address = addresses.get(0).getAddressLine(0);
+                    currentLocationTextView.setText(address);
+                    goImageView.setClickable(true);
                 }
 
             } catch (IOException e) {
@@ -250,10 +280,23 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
         if (mLastLocation != null) {
             mLastLocation = location;
         }
-        // only once because we don't want to navigate, we only want to find current location
         if (triggered) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+            Geocoder geocoder;
+            List<Address> addresses;
+            geocoder = new Geocoder(getContext(), Locale.getDefault());
+            pointedLocation = latLng;
+
+            try {
+                addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+                String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+                currentLocationTextView.setText(address);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+
+            }
             triggered = false;
         }
 
@@ -296,4 +339,53 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     }
 
 
+    @Override
+    public void onClick(View view) {
+        if (view == goImageView) {
+
+            androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(getContext());
+            builder.setTitle("Enter Details");
+
+            LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            assert inflater != null;
+            @SuppressLint("InflateParams") View alertDialogView = inflater.inflate(R.layout.input_desc, null);
+            builder.setView(alertDialogView);
+            builder.setIcon(R.mipmap.ic_launcher);
+            builder.setCancelable(false);
+
+            final EditText descEditText = alertDialogView.findViewById(R.id.et_desc);
+
+            builder.setView(alertDialogView);
+
+            builder.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                String desc = descEditText.getText().toString();
+                String location = currentLocationTextView.getText().toString().trim();
+                if (!location.isEmpty() && !desc.isEmpty()) {
+                    Incident incident = new Incident();
+                    incident.setUserId(CurrentDatabase.getCurrentPublicUser().getUserId());
+                    incident.setLocation(pointedLocation.latitude + "," + pointedLocation.longitude);
+                    incident.setDesc(desc);
+                    incident.setTimestamp(System.currentTimeMillis());
+                    AppUtils.success(getContext(), "Incident reported successfully");
+                    FirebaseDatabaseHelper.createIncident(incident);
+
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.position(pointedLocation);
+                    markerOptions.icon(AppUtils.bitmapDescriptorFromVector(getContext(), R.drawable.ic_marker_pin));
+                    markerOptions.title(incident.getDesc());
+                    mGoogleMap.addMarker(markerOptions);
+                } else {
+                    AppUtils.info(getContext(), "Invalid data");
+                    dialog.cancel();
+                }
+
+            });
+            builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+                AppUtils.info(getContext(), "Please write some text");
+                dialog.cancel();
+            });
+
+            builder.show();
+        }
+    }
 }
