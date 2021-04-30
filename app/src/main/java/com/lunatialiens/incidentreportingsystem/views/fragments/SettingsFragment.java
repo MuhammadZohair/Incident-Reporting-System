@@ -1,5 +1,6 @@
 package com.lunatialiens.incidentreportingsystem.views.fragments;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -17,6 +18,7 @@ import com.lunatialiens.incidentreportingsystem.repository.CurrentDatabase;
 import com.lunatialiens.incidentreportingsystem.repository.FirebaseDatabaseHelper;
 import com.lunatialiens.incidentreportingsystem.utils.AppUtils;
 import com.lunatialiens.incidentreportingsystem.utils.Constants;
+import com.lunatialiens.incidentreportingsystem.views.activities.LoginActivity;
 
 
 /**
@@ -25,8 +27,6 @@ import com.lunatialiens.incidentreportingsystem.utils.Constants;
 public class SettingsFragment extends Fragment implements View.OnClickListener {
 
     private EditText passwordEditText;
-    private EditText phoneNumberEditText;
-
     private Button updateButton;
 
     private PublicUser user;
@@ -44,9 +44,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 
     private void initializeWidgets(View v) {
         passwordEditText = v.findViewById(R.id.et_pasword);
-        phoneNumberEditText = v.findViewById(R.id.et_phone);
-
-        phoneNumberEditText.setText(user.getPhoneNumber());
 
         updateButton = v.findViewById(R.id.btn_update);
         updateButton.setOnClickListener(this);
@@ -57,21 +54,22 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         if (v == updateButton) {
             String password = passwordEditText.getText().toString();
-            String phoneNumber = phoneNumberEditText.getText().toString();
 
-            user.setPhoneNumber(phoneNumber);
 
             if (!TextUtils.isEmpty(password)) {
                 user.setPassword(password);
                 SharedPreferences preferences2 = getActivity().getSharedPreferences(Constants.CREDENTIALS, 0);
                 preferences2.edit().remove(Constants.EMAIL).apply();
                 preferences2.edit().remove(Constants.PASSWORD).apply();
-            }
 
-            CurrentDatabase.setCurrentPublicUser(user);
-            FirebaseDatabaseHelper.updatePublicUser(user);
+                CurrentDatabase.setCurrentPublicUser(null);
+                FirebaseDatabaseHelper.changePassword(password);
+                getActivity().finish();
+                startActivity(new Intent(getContext(), LoginActivity.class));
+                AppUtils.success(getContext(), "Password updated");
 
-            AppUtils.success(getContext(), "Updated");
+            } else AppUtils.warning(getContext(), "Password cannot be empty");
+
         }
     }
 }

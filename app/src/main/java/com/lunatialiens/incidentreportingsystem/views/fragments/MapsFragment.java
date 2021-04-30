@@ -293,6 +293,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                 String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
                 currentLocationTextView.setText(address);
 
+                //load the traffic now
+                mGoogleMap.setTrafficEnabled(true);
             } catch (IOException e) {
                 e.printStackTrace();
 
@@ -363,7 +365,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                 if (!location.isEmpty() && !desc.isEmpty()) {
                     Incident incident = new Incident();
                     incident.setUserId(CurrentDatabase.getCurrentPublicUser().getUserId());
-                    incident.setLocation(pointedLocation.latitude + "," + pointedLocation.longitude);
+                    incident.setLocation(AppUtils.round(pointedLocation.latitude) + "," + AppUtils.round(pointedLocation.longitude));
                     incident.setDesc(desc);
                     incident.setTimestamp(System.currentTimeMillis());
                     AppUtils.success(getContext(), "Incident reported successfully");

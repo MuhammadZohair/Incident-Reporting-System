@@ -205,11 +205,15 @@ public class FirebaseDatabaseHelper {
             if (publicUserArrayList.get(i).equals(user)) {
                 publicUserArrayList.get(i).setName(user.getName());
                 publicUserArrayList.get(i).setPassword(user.getPassword());
-                publicUserArrayList.get(i).setPhoneNumber(user.getPhoneNumber());
                 publicUserArrayList.get(i).setName(user.getName());
                 break;
             }
         }
+    }
+
+    public static void changePassword(String password) {
+        FirebaseAuth.getInstance().getCurrentUser().updatePassword(password);
+        FirebaseAuth.getInstance().signOut();
     }
 
     /**

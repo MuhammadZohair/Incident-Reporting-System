@@ -14,7 +14,6 @@ public abstract class User implements Serializable {
     private String name;
     private String emailAddress;
     private String password;
-    private String phoneNumber;
 
     /**
      * Instantiates a new User.
@@ -29,14 +28,12 @@ public abstract class User implements Serializable {
      * @param name         the name
      * @param emailAddress the email address
      * @param password     the password
-     * @param phoneNumber  the phone number
      */
-    public User(String name, String emailAddress, String password, String phoneNumber) {
+    public User(String name, String emailAddress, String password) {
         this.userId = AppUtils.generateUUID();
         this.name = name;
         this.emailAddress = emailAddress;
         this.password = password;
-        this.phoneNumber = phoneNumber;
     }
 
     /**
@@ -111,24 +108,6 @@ public abstract class User implements Serializable {
         this.password = password;
     }
 
-    /**
-     * Gets phone number.
-     *
-     * @return the phone number
-     */
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    /**
-     * Sets phone number.
-     *
-     * @param phoneNumber the phone number
-     */
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
     @Override
     public String toString() {
         return "User{" +
@@ -136,7 +115,6 @@ public abstract class User implements Serializable {
                 ", name='" + name + '\'' +
                 ", emailAddress='" + emailAddress + '\'' +
                 ", password='" + password + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 '}';
     }
 }

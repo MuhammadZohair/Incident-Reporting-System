@@ -1,25 +1,15 @@
 package com.lunatialiens.incidentreportingsystem.utils;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.text.format.DateFormat;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.annotation.DrawableRes;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -27,15 +17,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.lunatialiens.incidentreportingsystem.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,11 +33,6 @@ import es.dmoral.toasty.Toasty;
  * The type App utils.
  */
 public class AppUtils {
-
-    /**
-     * The constant PUBLIC_USER_TYPE.
-     */
-    public static final String PUBLIC_USER_TYPE = "PUBLIC_USER";
 
 
     private static final Pattern VALID_EMAIL_ADDRESS_REGEX =
@@ -121,52 +103,6 @@ public class AppUtils {
         mStorageRef.putFile(imageUri);
     }
 
-    /**
-     * Gets date.
-     *
-     * @param context  the context
-     * @param editText the edit text
-     */
-    public static void getDate(Activity context, EditText editText) {
-        Calendar myCalendar = Calendar.getInstance();
-
-
-        DatePickerDialog.OnDateSetListener date = (view, year, monthOfYear, dayOfMonth) -> {
-            myCalendar.set(Calendar.YEAR, year);
-            myCalendar.set(Calendar.MONTH, monthOfYear);
-            myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            String myFormat = "dd-MM-yyyy";
-            SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
-
-            String startDateStr = sdf.format(myCalendar.getTime());
-            editText.setText(startDateStr);
-
-        };
-        new DatePickerDialog(Objects.requireNonNull(context), date, myCalendar
-                .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
-                myCalendar.get(Calendar.DAY_OF_MONTH)).show();
-    }
-
-    /**
-     * Gets time.
-     *
-     * @param context  the context
-     * @param editText the edit text
-     */
-    public static void getTime(Context context, EditText editText) {
-        Calendar mCurrentTime = Calendar.getInstance();
-        int hour = mCurrentTime.get(Calendar.HOUR_OF_DAY);
-        int minute = mCurrentTime.get(Calendar.MINUTE);
-        TimePickerDialog mTimePicker;
-        mTimePicker = new TimePickerDialog(context, (timePicker, hourOfDay, minute1) -> {
-            boolean isPM = (hourOfDay >= 12);
-            String time = " " + String.format("%02d:%02d %s",
-                    (hourOfDay == 12 || hourOfDay == 0) ? 12 : hourOfDay % 12, minute1, isPM ? "PM" : "AM");
-            editText.setText(time);
-        }, hour, minute, false);
-        mTimePicker.setTitle("Select Time");
-        mTimePicker.show();
-    }
 
     /**
      * Formulate date string.
@@ -317,50 +253,14 @@ public class AppUtils {
     }
 
     /**
-     * Clear shared prefs.
-     *
-     * @param context the context
-     */
-    public static void clearSharedPrefs(Context context) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("email", "").apply();
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("password", "").apply();
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("type", "").apply();
-    }
-
-    /**
-     * Gets todays total cals.
-     *
-     * @param context the context
-     * @return the todays total cals
-     */
-    public static float getTodaysTotalCals(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getFloat("CALS", 0);
-    }
-
-
-    /**
-     * Save todays total cals.
-     *
-     * @param context the context
-     * @param cals    the cals
-     */
-    public static void saveTodaysTotalCals(Context context, Float cals) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putFloat("CALS", (
-                PreferenceManager.getDefaultSharedPreferences(context).getFloat("CALS", 0) + cals
-        )).apply();
-    }
-
-    /**
      * Round double.
      *
-     * @param value  the value
-     * @param places the places
+     * @param value the value
      * @return the double
      */
-    public static double round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
+    public static double round(double value) {
 
-        long factor = (long) Math.pow(10, places);
+        long factor = (long) Math.pow(10, 2);
         value = value * factor;
         long tmp = Math.round(value);
         return (double) tmp / factor;
@@ -374,33 +274,6 @@ public class AppUtils {
      */
     public static String getSimpleTime(long timeStamp) {
         return new SimpleDateFormat("dd/MM/yyyy hh:mm aa").format(timeStamp);
-    }
-
-    /**
-     * Gets simple date.
-     *
-     * @param timeStamp the time stamp
-     * @return the simple date
-     */
-    public static String getSimpleDate(long timeStamp) {
-        return new SimpleDateFormat("dd/MM/yyyy").format(timeStamp);
-    }
-
-    /**
-     * Get date string [ ].
-     *
-     * @param time the time
-     * @return the string [ ]
-     */
-    public static String[] getDate(long time) {
-        String[] array = new String[3];
-        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
-        cal.setTimeInMillis(time);
-        String date = DateFormat.format("dd-MM-yyyy", cal).toString();
-        array[0] = date.substring(0, 2);
-        array[1] = date.substring(3, 5);
-        array[2] = date.substring(6);
-        return array;
     }
 
     /**
@@ -429,40 +302,5 @@ public class AppUtils {
         List<String> latlng = Arrays.asList(location.split(","));
         return new LatLng(Double.parseDouble(latlng.get(0)), Double.parseDouble(latlng.get(1)));
 
-    }
-
-    /**
-     * Open dialog to get details string.
-     *
-     * @param activity the activity
-     * @return the string
-     */
-    public static String openDialogToGetDetails(FragmentActivity activity) {
-        final String[] text = new String[1];
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle("Enter Details");
-
-        LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        assert inflater != null;
-        @SuppressLint("InflateParams") View alertDialogView = inflater.inflate(R.layout.input_desc, null);
-        builder.setView(alertDialogView);
-        builder.setIcon(R.mipmap.ic_launcher);
-        builder.setCancelable(false);
-
-        final EditText codeEditText = alertDialogView.findViewById(R.id.et_desc);
-
-        builder.setView(alertDialogView);
-
-        builder.setPositiveButton(android.R.string.ok, (dialog, which) -> {
-            String t = codeEditText.getText().toString();
-            text[0] = t;
-        });
-        builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
-            info(activity, "Please write some text");
-            dialog.cancel();
-        });
-
-        builder.show();
-        return text[0];
     }
 }

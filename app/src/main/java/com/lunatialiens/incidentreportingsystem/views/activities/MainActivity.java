@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         mapsFragment = new MapsFragment();
         settingsFragment = new SettingsFragment();
 
-        loadFragment(homeFragment);
+        loadFragment(mapsFragment);
 
     }
 
@@ -57,12 +57,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             case R.id.navigation_settings:
                 loadFragment(settingsFragment);
                 break;
-
             case R.id.navigation_maps:
                 loadFragment(mapsFragment);
                 break;
-
-
             case R.id.navigation_logout:
                 AppUtils.success(getApplicationContext(), "Logout Successful");
                 i = new Intent(MainActivity.this, LoginActivity.class);

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Calories Counter</string>
+    <string name="app_name">Incident Reporting System</string>
     <string name="version">Version 1.1 Copy Rights Reserved</string>
     <string name="create_account">Don\'t have an account?</string>
     <string name="register">Register!</string>
