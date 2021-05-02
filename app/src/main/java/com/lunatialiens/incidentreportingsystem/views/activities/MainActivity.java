@@ -106,4 +106,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         return false;
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadFragment(mapsFragment);
+    }
 }

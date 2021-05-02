@@ -184,6 +184,16 @@ public class FirebaseDatabaseHelper {
         });
     }
 
+    public static Incident getIncidentById(String id) {
+        for (int i = 0; i < incidentArrayList.size(); i++) {
+            if (incidentArrayList.get(i).getIncidentId().equalsIgnoreCase(id)) {
+                return incidentArrayList.get(i);
+            }
+        }
+        return null;
+    }
+
+
     ///////////////////////////////////////// HELPER METHODS ///////////////////////////////////////////////////////
 
     private static void readData(DatabaseReference databaseReference,
@@ -215,6 +225,7 @@ public class FirebaseDatabaseHelper {
         FirebaseAuth.getInstance().getCurrentUser().updatePassword(password);
         FirebaseAuth.getInstance().signOut();
     }
+
 
     /**
      * The interface On get data listener.

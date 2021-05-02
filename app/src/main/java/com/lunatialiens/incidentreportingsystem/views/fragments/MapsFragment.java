@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -13,7 +14,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -37,12 +37,13 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.lunatialiens.incidentreportingsystem.R;
 import com.lunatialiens.incidentreportingsystem.models.Incident;
-import com.lunatialiens.incidentreportingsystem.repository.CurrentDatabase;
 import com.lunatialiens.incidentreportingsystem.repository.FirebaseDatabaseHelper;
 import com.lunatialiens.incidentreportingsystem.utils.AppUtils;
+import com.lunatialiens.incidentreportingsystem.views.activities.AddMarkerActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ import java.util.Locale;
 public class MapsFragment extends Fragment implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener, View.OnClickListener {
+        LocationListener, View.OnClickListener, GoogleMap.OnInfoWindowClickListener {
 
     /**
      * The constant MY_PERMISSIONS_REQUEST_LOCATION.
@@ -118,15 +119,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
             mGoogleMap.setMyLocationEnabled(true);
             mGoogleMap.setOnCameraIdleListener(onCameraIdleListener);
 
-            setMarkersOnMap(googleMap);
+            setMarkersOnMap();
 
         } else {
             checkLocationPermission();
         }
     }
 
-    private void setMarkersOnMap(GoogleMap googleMap) {
-        googleMap.clear();
+    private void setMarkersOnMap() {
+        mGoogleMap.clear();
         ArrayList<Incident> incidentArrayList = FirebaseDatabaseHelper.getIncidentArrayList();
 
         for (int i = 0; i < incidentArrayList.size(); i++) {
@@ -134,8 +135,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
             markerOptions.position(AppUtils.parseLocation(incidentArrayList.get(i).getLocation()));
             markerOptions.icon(AppUtils.bitmapDescriptorFromVector(getContext(), R.drawable.ic_marker_pin));
             markerOptions.title(incidentArrayList.get(i).getDesc());
-            googleMap.addMarker(markerOptions);
+            markerOptions.snippet(incidentArrayList.get(i).getIncidentId());
+            mGoogleMap.addMarker(markerOptions);
         }
+        mGoogleMap.setOnInfoWindowClickListener(this);
     }
 
     private void displayLocationSettingsRequest(Context context) {
@@ -200,7 +203,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
                 new AlertDialog.Builder(getActivity())
-                        .setIcon(R.drawable.ic_launcher_foreground)
+                        .setIcon(R.drawable.logo)
                         .setTitle(R.string.app_name)
                         .setMessage("App needs to access the maps, please accept to use location functionality")
                         .setPositiveButton("Agree", (dialogInterface, i) -> {
@@ -283,14 +286,17 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
         if (triggered) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+
             Geocoder geocoder;
             List<Address> addresses;
             geocoder = new Geocoder(getContext(), Locale.getDefault());
             pointedLocation = latLng;
 
             try {
-                addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-                String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+                addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
+                // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+                String address = addresses.get(0).getAddressLine(0);
+                // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
                 currentLocationTextView.setText(address);
 
                 //load the traffic now
@@ -345,49 +351,50 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     public void onClick(View view) {
         if (view == goImageView) {
 
-            androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(getContext());
-            builder.setTitle("Enter Details");
+            Intent intent = new Intent(getContext(), AddMarkerActivity.class);
+            intent.putExtra("LOCATION", currentLocationTextView.getText().toString().trim());
+            intent.putExtra("LAT", pointedLocation.latitude);
+            intent.putExtra("LNG", pointedLocation.longitude);
+            startActivity(intent);
 
-            LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            assert inflater != null;
-            @SuppressLint("InflateParams") View alertDialogView = inflater.inflate(R.layout.input_desc, null);
-            builder.setView(alertDialogView);
-            builder.setIcon(R.mipmap.ic_launcher);
-            builder.setCancelable(false);
 
-            final EditText descEditText = alertDialogView.findViewById(R.id.et_desc);
-
-            builder.setView(alertDialogView);
-
-            builder.setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                String desc = descEditText.getText().toString();
-                String location = currentLocationTextView.getText().toString().trim();
-                if (!location.isEmpty() && !desc.isEmpty()) {
-                    Incident incident = new Incident();
-                    incident.setUserId(CurrentDatabase.getCurrentPublicUser().getUserId());
-                    incident.setLocation(AppUtils.round(pointedLocation.latitude) + "," + AppUtils.round(pointedLocation.longitude));
-                    incident.setDesc(desc);
-                    incident.setTimestamp(System.currentTimeMillis());
-                    AppUtils.success(getContext(), "Incident reported successfully");
-                    FirebaseDatabaseHelper.createIncident(incident);
-
-                    MarkerOptions markerOptions = new MarkerOptions();
-                    markerOptions.position(pointedLocation);
-                    markerOptions.icon(AppUtils.bitmapDescriptorFromVector(getContext(), R.drawable.ic_marker_pin));
-                    markerOptions.title(incident.getDesc());
-                    mGoogleMap.addMarker(markerOptions);
-                } else {
-                    AppUtils.info(getContext(), "Invalid data");
-                    dialog.cancel();
-                }
-
-            });
-            builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
-                AppUtils.info(getContext(), "Please write some text");
-                dialog.cancel();
-            });
-
-            builder.show();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mGoogleMap != null)
+            setMarkersOnMap();
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+
+        Incident incident = FirebaseDatabaseHelper.getIncidentById(marker.getSnippet());
+
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(getContext());
+        builder.setTitle("Incident Details");
+
+        LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        assert inflater != null;
+        @SuppressLint("InflateParams") View alertDialogView = inflater.inflate(R.layout.marker_popup, null);
+        builder.setView(alertDialogView);
+        builder.setIcon(R.drawable.logo);
+        builder.setCancelable(true);
+
+        final TextView titleTextView = alertDialogView.findViewById(R.id.title);
+        final TextView snippetTextView = alertDialogView.findViewById(R.id.snippet);
+        final ImageView imageView = alertDialogView.findViewById(R.id.imageView);
+
+        if (incident != null) {
+            titleTextView.setText(incident.getDesc());
+            snippetTextView.setText(incident.getLocation());
+            AppUtils.loadIncidentImage(getContext(), incident.getIncidentId(), imageView);
+        }
+
+        builder.setView(alertDialogView);
+        builder.setPositiveButton(R.string.close, (dialog, which) -> dialog.dismiss());
+        builder.show();
     }
 }

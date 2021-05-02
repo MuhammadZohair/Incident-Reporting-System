@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.ImageView;
 
 import androidx.annotation.DrawableRes;
@@ -34,6 +35,7 @@ import es.dmoral.toasty.Toasty;
  */
 public class AppUtils {
 
+    private static final String TAG = "AppUtils";
 
     private static final Pattern VALID_EMAIL_ADDRESS_REGEX =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
@@ -91,6 +93,24 @@ public class AppUtils {
     }
 
     /**
+     * Load image.
+     *
+     * @param context    the context
+     * @param incidentId the  id
+     * @param imageView  the image view
+     */
+    public static void loadIncidentImage(Context context, String incidentId, ImageView imageView) {
+        final StorageReference mStorageRef = FirebaseStorage.getInstance().getReference()
+                .child("incidents/" + incidentId + ".png");
+
+        mStorageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+            Glide.with(context)
+                    .load(uri.toString())
+                    .into(imageView);
+        });
+    }
+
+    /**
      * Upload image.
      *
      * @param id       the id
@@ -101,6 +121,17 @@ public class AppUtils {
                 .child("user_profile_pictures/" + id + ".png");
 
         mStorageRef.putFile(imageUri);
+    }
+
+    public static void uploadIncidentsImage(String id, Uri imageUri) {
+        final StorageReference mStorageRef = FirebaseStorage.getInstance().getReference()
+                .child("incidents/" + id + ".png");
+
+        mStorageRef.putFile(imageUri).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Log.i(TAG, "onComplete: success");
+            } else Log.i(TAG, "onComplete: failed");
+        });
     }
 
 
