@@ -10,6 +10,7 @@ import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.lunatialiens.incidentreportingsystem.R;
 import com.lunatialiens.incidentreportingsystem.models.Incident;
@@ -17,8 +18,10 @@ import com.lunatialiens.incidentreportingsystem.repository.CurrentDatabase;
 import com.lunatialiens.incidentreportingsystem.repository.FirebaseDatabaseHelper;
 import com.lunatialiens.incidentreportingsystem.utils.AppUtils;
 import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
+/**
+ * The type Add marker activity.
+ */
 public class AddMarkerActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageView incidentImageView;
@@ -49,9 +52,9 @@ public class AddMarkerActivity extends AppCompatActivity implements View.OnClick
     @Override
     public void onClick(View view) {
         if (view == incidentImageView) {
-            CropImage.activity()
-                    .setGuidelines(CropImageView.Guidelines.ON)
-                    .start(this);
+            ImagePicker.Companion.with(this)
+                    .crop()                    //Crop image(Optional), Check Customization for more option
+                    .start();
         } else if (view == saveButton) {
             String desc = descEditText.getText().toString();
             if (!location.isEmpty() && !desc.isEmpty() && imageUri != null) {
@@ -71,6 +74,13 @@ public class AddMarkerActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
+    /**
+     * This method is called when the camera / gallery returns the image
+     *
+     * @param requestCode the request code
+     * @param resultCode  the result code
+     * @param data        the data
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

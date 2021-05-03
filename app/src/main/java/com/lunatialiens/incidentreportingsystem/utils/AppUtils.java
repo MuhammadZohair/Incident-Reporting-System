@@ -123,6 +123,12 @@ public class AppUtils {
         mStorageRef.putFile(imageUri);
     }
 
+    /**
+     * Upload incidents image.
+     *
+     * @param id       the id
+     * @param imageUri the image uri
+     */
     public static void uploadIncidentsImage(String id, Uri imageUri) {
         final StorageReference mStorageRef = FirebaseStorage.getInstance().getReference()
                 .child("incidents/" + id + ".png");

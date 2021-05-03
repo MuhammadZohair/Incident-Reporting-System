@@ -25,27 +25,30 @@ public class FirebaseDatabaseHelper {
 
     private static final String TAG = "FirebaseDatabaseHelper";
 
-    private static FirebaseAuth firebaseAuth;
-    private static DatabaseReference publicUserEndPoint;
-    private static DatabaseReference incidentEndPoint;
+    private static FirebaseAuth firebaseAuth; // this is the firebase authentication object by which we check if user can login
+    private static DatabaseReference publicUserEndPoint; // this is the path of the database folder for the users
+    private static DatabaseReference incidentEndPoint; // this is the path of the database folder for the incidents
 
-    private static ArrayList<PublicUser> publicUserArrayList;
-    private static ArrayList<Incident> incidentArrayList;
+    private static ArrayList<PublicUser> publicUserArrayList; // the whole array list of users
+    private static ArrayList<Incident> incidentArrayList; // the whole array list containing all the incidents
 
     /**
      * Instantiates a new Firebase database helper.
      */
     public FirebaseDatabaseHelper() {
 
-        firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        publicUserEndPoint = firebaseDatabase.getReference("public_user_table");
-        incidentEndPoint = firebaseDatabase.getReference("incidents_table");
+        firebaseAuth = FirebaseAuth.getInstance(); // instantiate the object
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance(); // firebase initailization
+        publicUserEndPoint = firebaseDatabase.getReference("public_user_table"); // linking the end point to the folder
+        incidentEndPoint = firebaseDatabase.getReference("incidents_table"); // linking the end point to the folder
 
-        publicUserArrayList = getAllPublicUsersFromFirebase();
-        incidentArrayList = getAllIncidentsFromFirebase();
+        publicUserArrayList = getAllPublicUsersFromFirebase(); // fetching all the users from the database
+        incidentArrayList = getAllIncidentsFromFirebase(); // fetching all the incidents from the database
     }
 
+    /**
+     * @return the list of all users fetched from the database
+     */
     private static ArrayList<PublicUser> getAllPublicUsersFromFirebase() {
         final ArrayList<PublicUser> publicUsers = new ArrayList<>();
         readData(publicUserEndPoint, dataSnapshot -> {
@@ -56,6 +59,9 @@ public class FirebaseDatabaseHelper {
         return publicUsers;
     }
 
+    /**
+     * @return the list of all the incidents from the database
+     */
     private static ArrayList<Incident> getAllIncidentsFromFirebase() {
         final ArrayList<Incident> incidents = new ArrayList<>();
         readData(incidentEndPoint, dataSnapshot -> {
@@ -184,6 +190,12 @@ public class FirebaseDatabaseHelper {
         });
     }
 
+    /**
+     * Gets incident by id.
+     *
+     * @param id the id
+     * @return the incident by id
+     */
     public static Incident getIncidentById(String id) {
         for (int i = 0; i < incidentArrayList.size(); i++) {
             if (incidentArrayList.get(i).getIncidentId().equalsIgnoreCase(id)) {
@@ -221,6 +233,11 @@ public class FirebaseDatabaseHelper {
         }
     }
 
+    /**
+     * Change password.
+     *
+     * @param password the password
+     */
     public static void changePassword(String password) {
         FirebaseAuth.getInstance().getCurrentUser().updatePassword(password);
         FirebaseAuth.getInstance().signOut();
@@ -236,7 +253,6 @@ public class FirebaseDatabaseHelper {
          *
          * @param dataSnapshot the data snapshot
          */
-//this is for callbacks
         void onSuccess(DataSnapshot dataSnapshot);
     }
 
